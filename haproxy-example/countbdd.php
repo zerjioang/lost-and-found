@@ -3,7 +3,7 @@ ob_start();
 header("Content-type: text/javascript");
 
 // Creamos la conexion con la base de datos
-$con = @mysqli_connect('localhost', 'USUARIO_BD', 'PASSWORD_BD', 'NOMBRE_BD') or die("document.write('Error');");
+$con = @mysqli_connect('localhost', 'root', 'd3m0', 'visitas') or die("document.write('Error');");
 
 // Obtenemos, y validamos enlace actual
 $enlace = $_SERVER['HTTP_REFERER'];
