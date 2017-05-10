@@ -1,34 +1,54 @@
-<?php   
-	require('config.php');   
-	//se requiere el archivo para validar los datos de usuario de bdd para conectar   
-	$ip = $REMOTE_ADDR;   
-	$fecha = date("j \d\e\l n \d\e Y");   
-	$hora = date("h:i:s");   
-	$horau = date("h");   
-	$diau = date("z");   
-	$aniou = date("Y");   
-	//se asignan la variables   
-	$sql = "SELECT aniou, diau, horau, ip ";   
-	$sql.= "FROM contador WHERE aniou LIKE '$aniou' AND diau LIKE '$diau' AND horau LIKE '$horau' AND ip LIKE '$ip' ";   
-	$es = mysql_query($sql, $con) or die("Error al leer base de datos: ".mysql_error);   
-	//se buscan los registros que coincidan con la hora,dia,año e ip    
-	if(mysql_num_rows($es)>0)   
-	{//no se cuenta la visita   
-	}   
-	else   
-	{   
-	$sql = "INSERT INTO contador (id, ip, fecha, hora, horau, diau, aniou) ";   
-	$sql.= "VALUES ('','$ip','$fecha','$hora','$horau','$diau','$aniou')";   
-	$es = mysql_query($sql, $con) or die("Error al grabar un mensaje: ".mysql_error);   
-	}   
-	//creamos el condicionamiendo para logearlo o no.   
-	$sql = "SELECT * ";   
-	$sql.= "FROM contador WHERE id ";   
-	$es = mysql_query($sql, $con) or die("Error al leer base de datos: ".mysql_error);   
-	$visitas = mysql_num_rows($es);   
-	$men=$men . "<table width='9%' border='1' height='25' bgcolor='#333333'>" . chr(10);   
-	$men=$men . "<tr>" . chr(10);   
-	$men=$men . "<td><font color=#FFFFFF>Visitas:$visitas</font></td>" . chr(10);   
-	$men=$men . "</tr>" . chr(10);   
-	$men=$men . "</table>" . chr(10);   
-?> 
+ <?php
+ob_start();
+header("Content-type: text/javascript");
+
+// Creamos la conexion con la base de datos
+$con = @mysqli_connect('localhost', 'USUARIO_BD', 'PASSWORD_BD', 'NOMBRE_BD') or die("document.write('Error');");
+
+// Obtenemos, y validamos enlace actual
+$enlace = $_SERVER['HTTP_REFERER'];
+if (!$enlace || $enlace == '') {
+    die();
+}
+
+// Obtenemos los datos de la base de datos
+$sql = "SELECT visitas FROM visitas WHERE enlace='$enlace'";
+$query = mysqli_query($con, $sql);
+$row = mysqli_fetch_assoc($query);
+
+/*creamos los codigos querys verificando primero las cookies, para contar visitas y no impresiones web*/
+if (isset($_COOKIE[md5($enlace)])) {
+    // si existe la cookie solo le damos el valor a $visitas
+    $visitas = $row['visitas'];
+    echo "document.write($visitas);";
+} elseif (!isset($_COOKIE[md5($enlace)])) {
+    // Comprobamos si el enlace ya esta en la base de datos
+    $rows = mysqli_num_rows($query);
+    if ($rows > 0) {
+        // Cuando exista lo enlace actualizamos
+        $SQL = "UPDATE visitas SET visitas=visitas+1 WHERE enlace='$enlace'";
+        if (mysqli_query($con, $SQL)) { // Si se inserta la visita
+            $visitas = ($row['visitas']) + (1); // Le sumamos uno para mostrar la visita actual
+            echo "document.write($visitas);";
+            setcookie(md5($enlace), '_vStD', time() + 86400); // Y creamos la cookie de 1 dia
+        } else { // Si no se inserta la visita
+            $visitas = $row['visitas']; // Solo obtenemos las visitas
+            echo "document.write($visitas);";
+        }
+    } elseif ($rows == 0) {
+        // Cuando no existe el enlace en la base de datos la insertamos
+        $SQL = "INSERT INTO visitas (enlace,visitas) VALUES ('$enlace',1)";
+        if (mysqli_query($con,$SQL)) { // Si se inserta la nueva enlace
+            echo "document.write(1);";
+            setcookie(md5($enlace), '_vStD', time() + 86400); // Y creamos la cookie de 1 dia
+        } else { // Si no se inserta mostramos
+            echo "document.write(0);";
+        }
+    }
+}
+
+// Por ultimo cerramos la conexion, y cerramos el script
+ob_end_flush();
+mysqli_close($con);
+die();
+?>
