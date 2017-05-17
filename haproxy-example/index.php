@@ -3,5 +3,5 @@
 	<title>Counter</title>
 </head>
 <body>
-	Visitas: <script src="//countbdd.php"></script>
+	Visitas: <script src="./countbdd.php"></script>
 </body>
