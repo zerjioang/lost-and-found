@@ -1,4 +1,4 @@
-# Nombre:       Sergio Anguita Lorenzo
+# Nombre:       Sergio
 # Entrega:      Outliers
 # Fecha:        13 octubre
 #---------------------------------------------------------------------------
