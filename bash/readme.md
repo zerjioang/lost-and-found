@@ -14,3 +14,7 @@ ok "This is a success message"
 ```
 
 ## Result
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/zerjioang/lost-and-found/master/bash/terminal.png"></img>
+</p>
